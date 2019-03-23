@@ -4,12 +4,16 @@ interface Observer {
   complete?: Function;
 }
 
-type Subscribe = (observer: Observer) => void;
+interface Subscription {
+  unsubscribe: Function;
+}
+
+type SubscribeFn = (observer: Observer) => Subscription;
 
 class Observable {
-  _subscribe: Subscribe;
+  private _subscribe: SubscribeFn;
 
-  constructor(subscribe) {
+  constructor(subscribe: SubscribeFn) {
     this._subscribe = subscribe;
   }
 
@@ -31,26 +35,22 @@ class Observable {
       };
     });
   }
+
+  static fromEvent(dom: HTMLElement, eventName: string) {
+    return new Observable(function(observer: Observer) {
+      const handle = (ev: Event) => {
+        observer.next(ev);
+      };
+
+      dom.addEventListener(eventName, handle);
+
+      return {
+        unsubscribe() {
+          dom.removeEventListener(eventName, handle);
+        }
+      };
+    });
+  }
 }
 
-const obs = Observable.timeout(500);
-
-obs.subscribe({
-  next() {
-    console.log("next 1");
-  },
-  complete() {
-    console.log("complete 1");
-  }
-});
-
-setTimeout(function() {
-  obs.subscribe({
-    next() {
-      console.log("next 2");
-    },
-    complete() {
-      console.log("complete 2");
-    }
-  });
-}, 1000);
+export default Observable;
