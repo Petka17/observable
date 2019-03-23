@@ -1,7 +1,7 @@
 interface Observer {
-  next: Function;
-  error?: Function;
-  complete?: Function;
+  next: (data?: any) => void;
+  error?: (err: Error) => void;
+  complete?: () => void;
 }
 
 interface Subscription {
@@ -37,7 +37,7 @@ class Observable {
   }
 
   static fromEvent(dom: HTMLElement, eventName: string) {
-    return new Observable(function(observer: Observer) {
+    return new Observable(function subscribe(observer: Observer) {
       const handle = (ev: Event) => {
         observer.next(ev);
       };
@@ -49,6 +49,28 @@ class Observable {
           dom.removeEventListener(eventName, handle);
         }
       };
+    });
+  }
+
+  public map(projection: Function) {
+    const self = this;
+
+    return new Observable(function subscribe(observer: Observer) {
+      return self.subscribe({
+        next(v: any) {
+          try {
+            observer.next(projection(v));
+          } catch (err) {
+            observer.error(err);
+          }
+        },
+        error(err: Error) {
+          observer.error(err);
+        },
+        complete() {
+          observer.complete();
+        }
+      });
     });
   }
 }
