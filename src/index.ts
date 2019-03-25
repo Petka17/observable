@@ -37,6 +37,16 @@ class Observable {
       };
     });
   }
+  // TODO: add observable that failed
+  static fail(msg: string) {
+    return new Observable(function subscribe(observer: Observer) {
+      observer.error(new Error(msg));
+
+      return {
+        unsubscribe() {}
+      };
+    });
+  }
 
   static timeout(time: number) {
     return new Observable(function subscribe(observer: Observer) {
@@ -73,7 +83,7 @@ class Observable {
     const self = this;
 
     return new Observable(function subscribe(observer: Observer) {
-      return self.subscribe({
+      const subscription = self.subscribe({
         next(v: any) {
           try {
             observer.next(projection(v));
@@ -88,6 +98,8 @@ class Observable {
           observer.complete();
         }
       });
+
+      return subscription;
     });
   }
 
@@ -114,6 +126,8 @@ class Observable {
       });
     });
   }
+
+  // TODO: add concat and merge method
 }
 
 export default Observable;
