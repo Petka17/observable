@@ -63,7 +63,7 @@ class Observable {
     });
   }
 
-  static fromEvent(dom: HTMLElement, eventName: string) {
+  static fromEvent(eventName: string, dom: HTMLElement) {
     return new Observable(function subscribe(observer: Observer) {
       const handle = (ev: Event) => {
         observer.next(ev);

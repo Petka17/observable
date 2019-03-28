@@ -1,3 +1,4 @@
+import { getByLabelText, fireEvent } from "dom-testing-library";
 import Observable from "../index";
 
 test("of with not array", () => {
@@ -213,3 +214,25 @@ test("filter failed projection", done => {
 });
 
 // TODO: add test for fromEvent
+test("fromEvent", done => {
+  const msg = "test";
+  const div = document.createElement("div");
+  div.innerHTML = `
+    <label for="username">Username</label>
+    <input id="username" />
+    <button>Print Username</button>`;
+
+  const input = getByLabelText(div, "Username");
+
+  const events = Observable.fromEvent("change", div);
+
+  const sub = events.subscribe({
+    next(ev: Event) {
+      expect((<HTMLInputElement>ev.target).value).toBe(msg);
+      sub.unsubscribe();
+      done();
+    }
+  });
+
+  fireEvent.change(input, { target: { value: msg } });
+});
